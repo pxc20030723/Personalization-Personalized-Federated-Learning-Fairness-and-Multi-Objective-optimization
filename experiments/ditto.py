@@ -16,15 +16,15 @@ from src.federated.server_base import Server
 def main():
     # ============ 配置 ============
     NUM_CLIENTS = 10
-    NUM_ROUNDS = 20
-    LOCAL_EPOCHS_GLOBAL = 5      
-    LOCAL_EPOCHS_PERSONALIZED = 5  
+    NUM_ROUNDS = 30
+    LOCAL_EPOCHS_GLOBAL = 3
+    LOCAL_EPOCHS_PERSONALIZED = 5
     BATCH_SIZE = 256
     Global_LEARNING_RATE = 0.005
     Local_LEARNING_RATE=0.008
 
     EMBEDDING_DIM = 64
-    LAMBDA = 0.05  # Ditto nomalization
+    LAMBDA = 0.1# Ditto nomalization
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     DATA_DIR = '/Users/xinchepeng/Documents/Github_projects/18667_project/data/federated_data'
@@ -94,7 +94,8 @@ def main():
     global_model = MatrixFactorization(
         num_users=NUM_USERS,
         num_items=NUM_ITEMS,
-        embedding_dim=EMBEDDING_DIM
+        embedding_dim=EMBEDDING_DIM,
+        dropout=0.2
     )
     
     server = Server(global_model, device=DEVICE)

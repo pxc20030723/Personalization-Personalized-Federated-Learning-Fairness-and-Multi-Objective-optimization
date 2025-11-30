@@ -18,13 +18,13 @@ def main():
     NUM_CLIENTS = 10
     NUM_ROUNDS = 30
     LOCAL_EPOCHS_GLOBAL = 3
-    LOCAL_EPOCHS_PERSONALIZED = 5
-    BATCH_SIZE = 256
-    Global_LEARNING_RATE = 0.005
-    Local_LEARNING_RATE=0.008
+    LOCAL_EPOCHS_PERSONALIZED = 3
+    BATCH_SIZE = 32
+    Global_LEARNING_RATE = 0.01
+    Local_LEARNING_RATE=0.005
 
     EMBEDDING_DIM = 64
-    LAMBDA = 0.1# Ditto nomalization
+    LAMBDA = 0.01# Ditto nomalization
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     DATA_DIR = '/Users/xinchepeng/Documents/Github_projects/18667_project/data/federated_data'
@@ -130,7 +130,7 @@ def main():
         global_test_rmses = []
         personalized_test_rmses = []
         
-        for client in clients:
+        for id,client in enumerate(clients):
            
             client.receive_global_model(global_model_copy)
             
@@ -147,13 +147,14 @@ def main():
                 lr=Local_LEARNING_RATE
             )
             personalized_train_losses.append(personalized_loss)
-            
+           
             # evaluate 
             global_metrics = client.evaluate(use_personalized=False)
             personalized_metrics = client.evaluate(use_personalized=True)
             
             global_test_rmses.append(global_metrics['rmse'])
             personalized_test_rmses.append(personalized_metrics['rmse'])
+        
             
             # 
             client_models.append(client.get_global_model_params())
@@ -161,8 +162,12 @@ def main():
         
         # server aggregator
         server.aggregate(client_models, client_weights)
-        
-        
+        '''
+        for id in range(10):
+            print(f"cliend{id} global train losses:{global_train_losses[id]:.4f},local train losses:{personalized_train_losses[id]:.4f}")
+            print(f"            global test losses:{global_test_rmses[id]:.4f},  local test losses:{personalized_test_rmses[id]:.4f}")
+            print(f"           imporvements={global_test_rmses[id]-personalized_test_rmses[id]:.4f}")
+        '''
         avg_global_loss = sum(global_train_losses) / len(global_train_losses)
         avg_personalized_loss = sum(personalized_train_losses) / len(personalized_train_losses)
         avg_global_rmse = sum(global_test_rmses) / len(global_test_rmses)
@@ -171,7 +176,7 @@ def main():
         print(f"  global model   - train loss: {avg_global_loss:.4f}, test RMSE: {avg_global_rmse:.4f}")
         print(f"  personalized model - train loss: {avg_personalized_loss:.4f}, test RMSE: {avg_personalized_rmse:.4f}")
         print(f"  improvement: {avg_global_rmse - avg_personalized_rmse:.4f}")
-        
+    
         
         history['round'].append(round_idx + 1)
         history['avg_global_train_loss'].append(avg_global_loss)
@@ -189,6 +194,7 @@ def main():
                       f"improvements={improvement:.4f}")
     
     
+    
     print("\n[5/5] save result")
     print("="*70)
     
@@ -200,7 +206,7 @@ def main():
     history_path = f'{output_dir}/training_history.csv'
     history_df.to_csv(history_path, index=False)
     print(f"✓ history saved in : {history_path}")
-    '''
+    
     # 保存配置
     config_path = f'{output_dir}/config.txt'
     with open(config_path, 'w') as f:
@@ -213,7 +219,7 @@ def main():
         f.write(f"用户数: {NUM_USERS}\n")
         f.write(f"物品数: {NUM_ITEMS}\n")
     print(f"✓ 配置已保存: {config_path}")
-    '''
+    
     # 打印最终结果
     print("\n" + "="*70)
     print("训练完成！")

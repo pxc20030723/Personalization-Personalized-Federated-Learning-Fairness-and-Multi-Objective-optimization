@@ -146,7 +146,7 @@ class ClientDitto:
     
     def train_personalized_model(self, epochs=1, lr=0.001):
         self.personalized_model.train()
-        optimizer = optim.AdamW(self.personalized_model.parameters(), lr=lr,weight_decay=1e-5)
+        optimizer = optim.AdamW(self.personalized_model.parameters(), lr=lr,weight_decay=1e-4)
 
         global_params={
             name: param.clone().detach() 
@@ -159,7 +159,7 @@ class ClientDitto:
                 user_ids = batch['user'].to(self.device)
                 item_ids = batch['item'].to(self.device)
                 ratings = batch['rating'].to(self.device)
-                predictions = self.global_model(user_ids, item_ids)
+                predictions = self.personalized_model(user_ids, item_ids)
                 data_loss = self.criterion(predictions, ratings)
 
                 #normalization loss
@@ -208,7 +208,7 @@ class ClientDitto:
                     total_loss += loss.item()
                     all_predictions.extend(predictions.cpu().numpy())
                     all_targets.extend(ratings.cpu().numpy())
-                    avg_loss = total_loss / len(self.test_loader)
+            avg_loss = total_loss / len(self.test_loader)
             rmse = np.sqrt(np.mean((np.array(all_predictions) - np.array(all_targets)) ** 2))
         
             return {'loss': avg_loss, 'rmse': rmse}

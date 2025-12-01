@@ -15,14 +15,17 @@ from src.federated.server_base import Server
 def main():
 
     NUM_CLIENTS = 10
-    NUM_ROUNDS = 20
+    NUM_ROUNDS = 30   # 20
     LOCAL_EPOCHS = 5
-    BATCH_SIZE = 64
+    BATCH_SIZE = 32    # 64
     LEARNING_RATE = 0.001
     EMBEDDING_DIM = 64
+    Local_LEARNING_RATE = 0.005
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    DATA_DIR = '/Users/xinchepeng/Documents/Github_projects/18667_project/data/federated_data'
+    # DATA_DIR = '/Users/xinchepeng/Documents/Github_projects/18667_project/data/federated_data'
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA_DIR = os.path.join(BASE_DIR, 'data', 'federated_data')
     
     print("="*70)
     print("Federated learning train---FedAvg")

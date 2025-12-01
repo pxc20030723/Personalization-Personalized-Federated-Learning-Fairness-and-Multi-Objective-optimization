@@ -180,6 +180,20 @@ class ClientDitto:
         
         return total_loss / epochs
 
+    def compute_grad_one_batch(self):
+        """CPU：只跑 1 small batch，返回一维梯度向量（基于 global_model）"""
+        self.global_model.train()
+        batch = next(iter(self.train_loader))
+        user = batch['user'].to(self.device)
+        item = batch['item'].to(self.device)
+        rating = batch['rating'].to(self.device)
+
+        self.global_model.zero_grad()
+        loss = self.criterion(self.global_model(user, item), rating)
+        loss.backward()
+        g = torch.cat([p.grad.view(-1) for p in self.global_model.parameters()]).cpu()
+        return g
+
     def evaluate(self, use_personalized=True):
 
             """
